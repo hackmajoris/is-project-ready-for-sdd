@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Is My Project SDD-Ready?</title>
+<style>
+  :root {
+    --bg: #f8f9fb;
+    --surface: #ffffff;
+    --border: #e2e6ea;
+    --text: #1a1d23;
+    --text-muted: #6b7280;
+    --text-light: #9ca3af;
+    --accent: #4f46e5;
+    --accent-light: #eef2ff;
+    --green: #16a34a;
+    --green-bg: #dcfce7;
+    --yellow: #ca8a04;
+    --yellow-bg: #fef9c3;
+    --orange: #ea580c;
+    --orange-bg: #ffedd5;
+    --red: #dc2626;
+    --red-bg: #fee2e2;
+    --radius: 12px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -1px rgba(0,0,0,0.04);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 24px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow);
+  }
+
+  .header-inner {
+    max-width: 860px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .header-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .header-title .icon { font-size: 1.3rem; }
+
+  .score-pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 6px 16px;
+    font-size: 0.85rem;
+  }
+
+  .score-label { color: var(--text-muted); }
+
+  .score-value {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text-muted);
+    transition: color 0.3s;
+  }
+
+  .score-bar-wrap {
+    width: 80px;
+    height: 6px;
+    background: var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  .score-bar {
+    height: 100%;
+    border-radius: 99px;
+    width: 0%;
+    background: var(--text-muted);
+    transition: width 0.4s ease, background 0.4s ease;
+  }
+
+  /* Main */
+  .main {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+  }
+
+  /* Hero */
+  .hero {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .hero h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+
+  .hero p {
+    color: var(--text-muted);
+    font-size: 1rem;
+    max-width: 520px;
+    margin: 0 auto 20px;
+  }
+
+  .legend {
+    display: inline-flex;
+    gap: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 20px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .legend-item { display: flex; align-items: center; gap: 5px; }
+  .legend-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* Category card */
+  .category {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .category-header {
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .category-header:hover { background: var(--bg); }
+
+  .category-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .category-icon {
+    font-size: 1.2rem;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent-light);
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+
+  .category-title {
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+
+  .category-subtitle {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-top: 1px;
+  }
+
+  .category-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .cat-progress-wrap {
+    width: 60px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  .cat-progress {
+    height: 100%;
+    border-radius: 99px;
+    width: 0%;
+    background: var(--accent);
+    transition: width 0.3s ease;
+  }
+
+  .cat-score-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    min-width: 40px;
+    text-align: right;
+  }
+
+  .chevron {
+    font-size: 0.7rem;
+    color: var(--text-light);
+    transition: transform 0.2s;
+  }
+
+  .category.collapsed .chevron { transform: rotate(-90deg); }
+  .category.collapsed .category-body { display: none; }
+
+  .category-body { padding: 4px 0; }
+
+  /* Question row */
+  .question {
+    padding: 12px 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .question:last-child { border-bottom: none; }
+  .question:hover { background: #fcfcfd; }
+
+  .question-text {
+    flex: 1;
+    font-size: 0.88rem;
+    color: var(--text);
+    padding-top: 2px;
+  }
+
+  .q-controls {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .q-btn {
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .q-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .q-btn.active-yes {
+    background: var(--green-bg);
+    border-color: var(--green);
+    color: var(--green);
+  }
+
+  .q-btn.active-partial {
+    background: var(--yellow-bg);
+    border-color: var(--yellow);
+    color: var(--yellow);
+  }
+
+  .q-btn.active-no {
+    background: var(--red-bg);
+    border-color: var(--red);
+    color: var(--red);
+  }
+
+  /* Summary */
+  .summary {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    margin-top: 32px;
+    overflow: hidden;
+  }
+
+  .summary-header {
+    padding: 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .summary-h { font-weight: 700; font-size: 1.1rem; }
+
+  .readiness-badge {
+    padding: 6px 18px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    border: 2px solid transparent;
+  }
+
+  .badge-unanswered { background: var(--bg); color: var(--text-muted); border-color: var(--border); }
+  .badge-ready { background: var(--green-bg); color: var(--green); border-color: var(--green); }
+  .badge-mostly { background: var(--yellow-bg); color: var(--yellow); border-color: var(--yellow); }
+  .badge-partial { background: var(--orange-bg); color: var(--orange); border-color: var(--orange); }
+  .badge-notready { background: var(--red-bg); color: var(--red); border-color: var(--red); }
+
+  .summary-body { padding: 20px 24px; }
+
+  .summary-message {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    background: var(--bg);
+    border-radius: 8px;
+    border-left: 3px solid var(--border);
+  }
+
+  .summary-cats {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .summary-cat {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+
+  .summary-cat-name {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .summary-cat-bar-wrap {
+    height: 5px;
+    background: var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+    margin-bottom: 4px;
+  }
+
+  .summary-cat-bar {
+    height: 100%;
+    border-radius: 99px;
+    background: var(--accent);
+    width: 0%;
+    transition: width 0.4s ease;
+  }
+
+  .summary-cat-pct {
+    font-size: 0.72rem;
+    color: var(--text-light);
+    text-align: right;
+  }
+
+  /* Improvements */
+  .improvements-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .improvements-empty {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+
+  .improvement-card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+
+  .improvement-card.severity-no { border-left: 3px solid var(--red); }
+  .improvement-card.severity-partial { border-left: 3px solid var(--yellow); }
+
+  .improvement-card-header {
+    padding: 10px 14px;
+    background: var(--bg);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .improvement-q {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text);
+    flex: 1;
+  }
+
+  .improvement-tag {
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 99px;
+    flex-shrink: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .tag-no { background: var(--red-bg); color: var(--red); }
+  .tag-partial { background: var(--yellow-bg); color: var(--yellow); }
+
+  .improvement-card-body {
+    padding: 10px 14px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  @media (max-width: 560px) {
+    .improvement-card-body { grid-template-columns: 1fr; }
+  }
+
+  .improvement-section-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-light);
+    margin-bottom: 3px;
+  }
+
+  .improvement-why { color: var(--red); font-size: 0.82rem; line-height: 1.5; }
+  .improvement-how { color: var(--green); font-size: 0.82rem; line-height: 1.5; }
+
+  .improvement-cat-group { margin-bottom: 20px; }
+
+  .improvement-cat-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* Copy button */
+  .copy-btn {
+    display: block;
+    width: 100%;
+    margin-top: 20px;
+    padding: 12px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    text-align: center;
+  }
+
+  .copy-btn:hover { opacity: 0.9; }
+  .copy-btn:active { opacity: 0.8; }
+  .copy-btn.copied { background: var(--green); }
+
+  .incomplete-note {
+    text-align: center;
+    padding: 24px;
+    color: var(--text-muted);
+    font-size: 0.88rem;
+  }
+
+  .answered-count {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+
+  @media (max-width: 600px) {
+    .hero h1 { font-size: 1.5rem; }
+    .main { padding: 20px 16px 60px; }
+    .header-inner { gap: 10px; }
+    .score-bar-wrap { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="header-title">
+      <span class="icon">🧭</span>
+      SDD Readiness Assessment
+    </div>
+    <div class="score-pill">
+      <span class="score-label">Score</span>
+      <span class="score-value" id="headerScore">—</span>
+      <div class="score-bar-wrap">
+        <div class="score-bar" id="headerBar"></div>
+      </div>
+      <span class="answered-count" id="answeredCount">0/20 answered</span>
+    </div>
+  </div>
+</header>
+
+<main class="main">
+
+  <div class="hero">
+    <h1>Is Your Project Ready for SDD?</h1>
+    <p>AI Spec Driven Development moves fast. Answer 20 questions across 5 areas to find out where you stand — and exactly what to fix.</p>
+    <div class="legend">
+      <span class="legend-item"><span class="legend-dot" style="background:var(--green)"></span> Yes (2pts)</span>
+      <span class="legend-item"><span class="legend-dot" style="background:var(--yellow)"></span> Partial (1pt)</span>
+      <span class="legend-item"><span class="legend-dot" style="background:var(--red)"></span> No (0pts)</span>
+    </div>
+  </div>
+
+  <div id="categories"></div>
+
+  <div class="summary" id="summary">
+    <div class="summary-header">
+      <div>
+        <div class="summary-h">Assessment Results</div>
+      </div>
+      <div class="readiness-badge badge-unanswered" id="readinessBadge">Answer questions to begin</div>
+    </div>
+    <div class="summary-body" id="summaryBody">
+      <div class="incomplete-note" id="incompleteNote">Answer all 20 questions to unlock your full readiness report and improvement plan.</div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const DATA = [
+  {
+    id: "foundation",
+    icon: "📋",
+    title: "Project Foundation",
+    subtitle: "Requirements, goals, and domain clarity",
+    questions: [
+      {
+        id: "biz_requirements",
+        text: "Clear business requirements are documented and accessible to the team.",
+        why: "SDD asks AI to generate code from specs. If requirements are vague or tribal knowledge, specs will be wrong and AI output will be confidently incorrect.",
+        how: "Write a single requirements doc (a wiki page or README section is fine) listing what the system must do. Prioritize by feature, not implementation detail."
+      },
+      {
+        id: "domain_knowledge",
+        text: "Domain knowledge is written down: glossary, business rules, or onboarding notes.",
+        why: "AI doesn't know your domain's special terminology or implicit rules. Undocumented domain knowledge produces subtly wrong specs and generated code.",
+        how: "Add a `docs/domain.md` with key terms, business rules, and any 'gotchas'. Even 1-2 pages dramatically improves AI output quality."
+      }
+    ]
+  },
+  {
+    id: "codebase",
+    icon: "⚙️",
+    title: "Codebase & Technical Maturity",
+    subtitle: "Version control, tests, and CI/CD",
+    questions: [
+      {
+        id: "version_control",
+        text: "The project uses version control with a clear branching strategy.",
+        why: "SDD generates large amounts of code quickly. Without version control, mistakes are irreversible and rollback is manual. This is table stakes.",
+        how: "Initialize a version control repo and adopt a simple branching model (trunk-based or long-lived feature branches). Require all changes go through pull requests."
+      },
+      {
+        id: "test_suite",
+        text: "An existing test suite covers core functionality (unit or integration tests).",
+        why: "SDD produces code at machine speed. Without tests, AI-introduced regressions go undetected until production. Tests are the validation layer for every SDD output.",
+        how: "Add a `tests/` folder with at least one integration test per critical path. Wire it to CI. Aim for coverage of the most business-critical code first, not 100% coverage."
+      },
+      {
+        id: "ci_pipeline",
+        text: "A CI/CD pipeline automatically runs tests on every pull request.",
+        why: "SDD generates code at speed humans can't manually verify. Without CI, AI-produced regressions ship silently. CI is the gatekeeper that makes SDD safe.",
+        how: "Add a minimal CI pipeline that runs lint + tests on every PR. Can be as simple as 20 lines of YAML."
+      },
+      {
+        id: "stack_docs",
+        text: "Key tech stack decisions and constraints are written down.",
+        why: "AI tools propose solutions based on common patterns. If your stack has unusual constraints (legacy DB, custom framework, specific version pinning), they must be documented or AI ignores them.",
+        how: "Create `docs/decisions/` with one short file per major choice: context → decision → consequences. 3-5 entries cover most projects."
+      },
+      {
+        id: "linting",
+        text: "Consistent code style is enforced via linter or formatter (automated).",
+        why: "AI-generated code matches no style by default. Without automated formatting, every PR includes noisy style diffs that obscure real changes and slow reviews.",
+        how: "Add a linter/formatter config and run it in CI. Add a pre-commit hook so developers can't skip it."
+      },
+      {
+        id: "feedback_loop",
+        text: "Local build, lint, and tests run fast enough to iterate (seconds, not minutes).",
+        why: "SDD is a tight loop: prompt → generate → test → refine. Slow feedback breaks the loop — engineers stop verifying AI output because waiting is too painful, and bugs ship as a result.",
+        how: "Time your inner loop: `lint`, build, unit tests. Target under 30s. Split slow integration/E2E tests off the hot path. Cache deps and build artifacts in CI."
+      },
+      {
+        id: "codebase_map",
+        text: "A README or architecture doc explains the codebase structure and where features live.",
+        why: "AI needs a map. Without one, prompts produce code in the wrong directory, duplicate existing utilities, or invent parallel patterns instead of reusing them.",
+        how: "Add a top-level 'Where things live' section to the README: list main modules, entry points, and feature directories. One page max. Reference it from the AI context file."
+      }
+    ]
+  },
+  {
+    id: "specs",
+    icon: "📐",
+    title: "Specification Quality",
+    subtitle: "Clarity, testability, and spec lifecycle",
+    questions: [
+      {
+        id: "testable_specs",
+        text: "Requirements use concrete, measurable language — numbers and observable behaviors instead of vague terms like 'fast' or 'intuitive'.",
+        why: "AI cannot resolve fuzzy requirements. 'Fast' could mean 50ms or 5s — AI picks whichever is easier to code, silently. Vague specs guarantee surprises in production.",
+        how: "Audit your top 5 requirements. Replace every vague adjective with a measurable threshold: 'fast' → 'response < 200ms at p99', 'reliable' → '99.9% uptime', 'easy' → 'completes in < 3 clicks'."
+      },
+      {
+        id: "acceptance_criteria",
+        text: "Each feature has defined acceptance criteria before development begins.",
+        why: "Acceptance criteria define 'done.' Without them, AI output is declared complete when it compiles, not when it solves the problem.",
+        how: "Add acceptance criteria to every ticket before the sprint starts. Use the Given/When/Then format. Block spec-to-code until this gate is met."
+      },
+      {
+        id: "edge_cases",
+        text: "Edge cases and error paths are documented alongside happy paths.",
+        why: "AI is optimistic — it generates code for the happy path naturally. Edge cases require explicit prompting. Undocumented edge cases become production incidents.",
+        how: "For each spec, add a section: 'What happens when X is null/empty/offline/concurrent?' Document at least 3 error paths per critical feature."
+      },
+    ]
+  },
+  {
+    id: "team",
+    icon: "👥",
+    title: "Team & Process Readiness",
+    subtitle: "Skills, workflows, and accountability",
+    questions: [
+      {
+        id: "code_review",
+        text: "A code review process (PRs, approvals) is established and followed.",
+        why: "AI-generated code requires the same rigor as human-written code — arguably more, since it can be confidently wrong in subtle ways. No code review = no safety net.",
+        how: "Require at least one human reviewer for every PR containing AI-generated code. Add a checklist item: 'Reviewed AI output for logic correctness, not just style.'"
+      },
+      {
+        id: "definition_of_done",
+        text: "A Definition of Done is documented and agreed upon by the team.",
+        why: "AI completes tasks when told to. 'Done' needs a shared definition or quality gates get skipped. AI will happily declare done based on whatever criteria it's given.",
+        how: "Write a team DoD: tests pass, linter passes, spec updated, reviewed by human, no TODO/FIXME left. Post it in the team README and reference it in PR templates."
+      },
+      {
+        id: "ai_authorship",
+        text: "The team can distinguish AI-generated code from human-authored code during review.",
+        why: "Reviewers apply different scrutiny to AI output (should check logic, not just style). Unclear authorship leads to under-reviewed AI code in production.",
+        how: "Add a PR label `ai-generated` or a comment convention `# AI-generated, reviewed by <name>`. Configure PR templates with an AI disclosure checkbox."
+      },
+      {
+        id: "ownership",
+        text: "An engineering lead is accountable for AI output quality.",
+        why: "AI diffuses accountability. Without a named owner, AI-generated bugs become nobody's responsibility. Ownership is the governance layer for SDD.",
+        how: "Assign one engineer per team as 'SDD Quality Lead.' They review all AI-generated PRs, own the AI context files, and track error rates. Rotate quarterly."
+      }
+    ]
+  },
+  {
+    id: "tooling",
+    icon: "🤖",
+    title: "AI Tooling & Context",
+    subtitle: "Tools, configuration, and prompting standards",
+    questions: [
+      {
+        id: "ai_tool",
+        text: "The team has access to an AI coding tool.",
+        why: "Without tooling, SDD cannot start. This is the most basic prerequisite.",
+        how: "Provision AI tool licenses for all engineers. Document which tool to use for which task (spec-to-code vs inline completion vs review)."
+      },
+      {
+        id: "context_file",
+        text: "A project-level AI context file exists (the instructions file your AI tool reads on every prompt).",
+        why: "Without a context file, AI knows nothing about your project: conventions, forbidden patterns, domain rules. Every prompt starts from zero and generates generic code.",
+        how: "Create the context file in the format your AI tool reads. Include: project purpose, tech stack, coding conventions, key files, and what NOT to do."
+      },
+      {
+        id: "prompting_guidelines",
+        text: "Prompting guidelines or prompt templates are documented for common tasks.",
+        why: "Inconsistent prompting produces wildly inconsistent output. One engineer gets great results; another gets garbage — from the same AI tool. Standards fix this.",
+        how: "Create `docs/prompts/` with templates for: 'implement feature from spec', 'write tests for function', 'review this diff'. Include examples of good vs bad prompts."
+      },
+      {
+        id: "review_checklist",
+        text: "An AI output review checklist exists and is used in code review.",
+        why: "AI code looks correct syntactically but can fail semantically. Without a checklist, reviewers focus on style (auto-linted anyway) and miss logic errors.",
+        how: "Add to PR template: ☐ Logic matches spec, ☐ Edge cases handled, ☐ No hardcoded values, ☐ Tests added/updated, ☐ No sensitive data exposed, ☐ Error paths tested."
+      }
+    ]
+  }
+];
+
+// State
+const answers = {};
+const MAX_SCORE = DATA.reduce((sum, cat) => sum + cat.questions.length * 2, 0);
+
+function getScore() {
+  let score = 0;
+  for (const val of Object.values(answers)) {
+    if (val === 'yes') score += 2;
+    else if (val === 'partial') score += 1;
+  }
+  return score;
+}
+
+function getAnsweredCount() {
+  return Object.keys(answers).length;
+}
+
+function getCatScore(cat) {
+  let score = 0, answered = 0;
+  for (const q of cat.questions) {
+    const v = answers[q.id];
+    if (v !== undefined) { answered++; }
+    if (v === 'yes') score += 2;
+    else if (v === 'partial') score += 1;
+  }
+  return { score, answered, max: cat.questions.length * 2 };
+}
+
+function getReadinessLevel(pct) {
+  if (pct >= 80) return { label: 'Ready', cls: 'badge-ready', color: 'var(--green)', msg: 'Your project has strong foundations for SDD. You can onboard fully — start with a well-scoped pilot feature to calibrate your team\'s workflow, then expand.' };
+  if (pct >= 60) return { label: 'Mostly Ready', cls: 'badge-mostly', color: 'var(--yellow)', msg: 'Good foundations, but gaps remain. Address the improvement items below before full rollout. Consider running a limited SDD pilot (one feature, one engineer) while fixing gaps.' };
+  if (pct >= 40) return { label: 'Partially Ready', cls: 'badge-partial', color: 'var(--orange)', msg: 'Several important areas need work before SDD can be safely adopted at scale. Prioritize the red items below. A constrained pilot on non-critical features is OK, but don\'t scale until gaps close.' };
+  return { label: 'Not Ready', cls: 'badge-notready', color: 'var(--red)', msg: 'Foundational gaps would make SDD unsafe or ineffective right now. Tackle the improvement plan below systematically. SDD onboarding should wait until you reach 60%+ across all categories.' };
+}
+
+function updateHeader() {
+  const score = getScore();
+  const answered = getAnsweredCount();
+  const pct = answered === 20 ? Math.round(score / MAX_SCORE * 100) : (answered > 0 ? Math.round(score / (answered * 2) * 100) : 0);
+
+  const el = document.getElementById('headerScore');
+  const bar = document.getElementById('headerBar');
+  const cnt = document.getElementById('answeredCount');
+
+  cnt.textContent = `${answered}/20 answered`;
+
+  if (answered === 0) {
+    el.textContent = '—';
+    bar.style.width = '0%';
+    bar.style.background = 'var(--text-muted)';
+    return;
+  }
+
+  const finalPct = Math.round(score / MAX_SCORE * 100);
+  el.textContent = answered === 20 ? `${finalPct}%` : `${score}/${answered * 2}`;
+
+  const barPct = answered === 20 ? finalPct : pct;
+  bar.style.width = barPct + '%';
+
+  if (barPct >= 80) bar.style.background = 'var(--green)';
+  else if (barPct >= 60) bar.style.background = 'var(--yellow)';
+  else if (barPct >= 40) bar.style.background = 'var(--orange)';
+  else bar.style.background = 'var(--red)';
+
+  const color = barPct >= 80 ? 'var(--green)' : barPct >= 60 ? 'var(--yellow)' : barPct >= 40 ? 'var(--orange)' : 'var(--red)';
+  el.style.color = color;
+}
+
+function updateCategoryUI(cat) {
+  const { score, answered, max } = getCatScore(cat);
+  const pct = answered > 0 ? Math.round(score / max * 100) : 0;
+  const bar = document.getElementById(`cat-bar-${cat.id}`);
+  const badge = document.getElementById(`cat-score-${cat.id}`);
+  if (bar) bar.style.width = pct + '%';
+  if (badge) badge.textContent = answered === cat.questions.length ? `${pct}%` : `${answered}/${cat.questions.length}`;
+}
+
+function updateSummary() {
+  const answered = getAnsweredCount();
+  const score = getScore();
+  const pct = Math.round(score / MAX_SCORE * 100);
+  const badge = document.getElementById('readinessBadge');
+  const body = document.getElementById('summaryBody');
+  const incomplete = document.getElementById('incompleteNote');
+
+  if (answered < 20) {
+    badge.className = 'readiness-badge badge-unanswered';
+    badge.textContent = `${answered}/20 answered`;
+    if (incomplete) incomplete.style.display = 'block';
+    return;
+  }
+
+  if (incomplete) incomplete.style.display = 'none';
+
+  const level = getReadinessLevel(pct);
+  badge.className = `readiness-badge ${level.cls}`;
+  badge.textContent = `${pct}% — ${level.label}`;
+
+  // Build full summary
+  let html = `<div class="summary-message" style="border-left-color:${level.color}">${level.msg}</div>`;
+
+  // Category breakdown
+  html += `<div class="summary-cats">`;
+  for (const cat of DATA) {
+    const { score: cs, max } = getCatScore(cat);
+    const cpct = Math.round(cs / max * 100);
+    const ccolor = cpct >= 80 ? 'var(--green)' : cpct >= 60 ? 'var(--yellow)' : cpct >= 40 ? 'var(--orange)' : 'var(--red)';
+    html += `<div class="summary-cat">
+      <div class="summary-cat-name">${cat.icon} ${cat.title}</div>
+      <div class="summary-cat-bar-wrap"><div class="summary-cat-bar" style="width:${cpct}%;background:${ccolor}"></div></div>
+      <div class="summary-cat-pct">${cpct}%</div>
+    </div>`;
+  }
+  html += `</div>`;
+
+  // Improvement cards
+  const gapsByCat = [];
+  for (const cat of DATA) {
+    const gaps = cat.questions.filter(q => answers[q.id] === 'no' || answers[q.id] === 'partial');
+    if (gaps.length > 0) {
+      // Sort: no first, then partial
+      gaps.sort((a, b) => {
+        const order = { no: 0, partial: 1 };
+        return order[answers[a.id]] - order[answers[b.id]];
+      });
+      gapsByCat.push({ cat, gaps });
+    }
+  }
+
+  if (gapsByCat.length === 0) {
+    html += `<div class="improvements-empty">🎉 All questions answered positively! Your project is fully ready for SDD.</div>`;
+  } else {
+    html += `<div class="improvements-title">⚡ Improvement Plan (${gapsByCat.reduce((s, g) => s + g.gaps.length, 0)} items)</div>`;
+    for (const { cat, gaps } of gapsByCat) {
+      html += `<div class="improvement-cat-group">
+        <div class="improvement-cat-label">${cat.icon} ${cat.title}</div>`;
+      for (const q of gaps) {
+        const sev = answers[q.id];
+        html += `<div class="improvement-card severity-${sev}">
+          <div class="improvement-card-header">
+            <div class="improvement-q">${q.text}</div>
+            <span class="improvement-tag tag-${sev}">${sev === 'no' ? 'Missing' : 'Partial'}</span>
+          </div>
+          <div class="improvement-card-body">
+            <div>
+              <div class="improvement-section-label">⚠ Why this blocks SDD</div>
+              <div class="improvement-why">${q.why}</div>
+            </div>
+            <div>
+              <div class="improvement-section-label">✓ How to fix it</div>
+              <div class="improvement-how">${q.how}</div>
+            </div>
+          </div>
+        </div>`;
+      }
+      html += `</div>`;
+    }
+  }
+
+  html += `<button class="copy-btn" id="copyBtn" onclick="copyResults()">Copy Results as Markdown</button>`;
+
+  body.innerHTML = html;
+}
+
+function copyResults() {
+  const answered = getAnsweredCount();
+  if (answered < 20) return;
+
+  const score = getScore();
+  const pct = Math.round(score / MAX_SCORE * 100);
+  const level = getReadinessLevel(pct);
+
+  let md = `# SDD Readiness Assessment Results\n\n`;
+  md += `**Score:** ${score}/${MAX_SCORE} (${pct}%) — **${level.label}**\n\n`;
+  md += `${level.msg}\n\n`;
+  md += `## Category Breakdown\n\n`;
+
+  for (const cat of DATA) {
+    const { score: cs, max } = getCatScore(cat);
+    const cpct = Math.round(cs / max * 100);
+    md += `- ${cat.icon} **${cat.title}**: ${cpct}%\n`;
+  }
+
+  md += `\n## Improvement Items\n\n`;
+
+  for (const cat of DATA) {
+    const gaps = cat.questions.filter(q => answers[q.id] === 'no' || answers[q.id] === 'partial');
+    if (gaps.length === 0) continue;
+    md += `### ${cat.icon} ${cat.title}\n\n`;
+    for (const q of gaps) {
+      const sev = answers[q.id] === 'no' ? '🔴 Missing' : '🟡 Partial';
+      md += `**${sev}:** ${q.text}\n\n`;
+      md += `- **Why it blocks SDD:** ${q.why}\n`;
+      md += `- **How to fix:** ${q.how}\n\n`;
+    }
+  }
+
+  md += `---\n*Generated by SDD Readiness Assessment*\n`;
+
+  navigator.clipboard.writeText(md).then(() => {
+    const btn = document.getElementById('copyBtn');
+    if (btn) {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copy Results as Markdown';
+        btn.classList.remove('copied');
+      }, 2000);
+    }
+  });
+}
+
+function setAnswer(qId, value) {
+  answers[qId] = value;
+
+  // Update button states
+  const row = document.getElementById(`q-${qId}`);
+  if (row) {
+    row.querySelectorAll('.q-btn').forEach(btn => {
+      btn.className = 'q-btn';
+      if (btn.dataset.value === value) {
+        btn.classList.add(`active-${value}`);
+      }
+    });
+  }
+
+  // Find which category this belongs to
+  for (const cat of DATA) {
+    if (cat.questions.some(q => q.id === qId)) {
+      updateCategoryUI(cat);
+      break;
+    }
+  }
+
+  updateHeader();
+  updateSummary();
+}
+
+function toggleCategory(catId) {
+  const el = document.getElementById(`cat-${catId}`);
+  if (el) el.classList.toggle('collapsed');
+}
+
+function renderCategories() {
+  const container = document.getElementById('categories');
+  let html = '';
+
+  for (const cat of DATA) {
+    html += `<div class="category" id="cat-${cat.id}">
+      <div class="category-header" onclick="toggleCategory('${cat.id}')">
+        <div class="category-title-wrap">
+          <div class="category-icon">${cat.icon}</div>
+          <div>
+            <div class="category-title">${cat.title}</div>
+            <div class="category-subtitle">${cat.subtitle}</div>
+          </div>
+        </div>
+        <div class="category-meta">
+          <div class="cat-progress-wrap"><div class="cat-progress" id="cat-bar-${cat.id}"></div></div>
+          <div class="cat-score-badge" id="cat-score-${cat.id}">0/${cat.questions.length}</div>
+          <div class="chevron">▼</div>
+        </div>
+      </div>
+      <div class="category-body">`;
+
+    for (const q of cat.questions) {
+      html += `<div class="question" id="q-${q.id}">
+        <div class="question-text">${q.text}</div>
+        <div class="q-controls">
+          <button class="q-btn" data-value="yes" onclick="setAnswer('${q.id}', 'yes')">Yes</button>
+          <button class="q-btn" data-value="partial" onclick="setAnswer('${q.id}', 'partial')">Partial</button>
+          <button class="q-btn" data-value="no" onclick="setAnswer('${q.id}', 'no')">No</button>
+        </div>
+      </div>`;
+    }
+
+    html += `</div></div>`;
+  }
+
+  container.innerHTML = html;
+}
+
+// Init
+renderCategories();
+</script>
+</body>
+</html>
