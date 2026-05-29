@@ -521,6 +521,35 @@
     font-size: 0.88rem;
   }
 
+  .failure-modes-section { margin-top: 24px; }
+
+  .failure-modes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 10px;
+  }
+
+  .failure-mode-card {
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--orange);
+    border-radius: 8px;
+    padding: 10px 14px;
+    background: var(--bg);
+  }
+
+  .failure-mode-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--orange);
+    margin-bottom: 4px;
+  }
+
+  .failure-mode-desc {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
   .answered-count {
     font-size: 0.78rem;
     color: var(--text-muted);
@@ -548,7 +577,7 @@
       <div class="score-bar-wrap">
         <div class="score-bar" id="headerBar"></div>
       </div>
-      <span class="answered-count" id="answeredCount">0/20 answered</span>
+      <span class="answered-count" id="answeredCount">0/— answered</span>
     </div>
   </div>
 </header>
@@ -557,7 +586,7 @@
 
   <div class="hero">
     <h1>Is Your Project Ready for SDD?</h1>
-    <p>AI Spec Driven Development moves fast. Answer 20 questions across 5 areas to find out where you stand — and exactly what to fix.</p>
+    <p>AI Spec Driven Development moves fast. Answer questions across 5 areas to find out where you stand — and exactly what to fix.</p>
     <div class="legend">
       <span class="legend-item"><span class="legend-dot" style="background:var(--green)"></span> Yes (2pts)</span>
       <span class="legend-item"><span class="legend-dot" style="background:var(--yellow)"></span> Partial (1pt)</span>
@@ -575,7 +604,7 @@
       <div class="readiness-badge badge-unanswered" id="readinessBadge">Answer questions to begin</div>
     </div>
     <div class="summary-body" id="summaryBody">
-      <div class="incomplete-note" id="incompleteNote">Answer all 20 questions to unlock your full readiness report and improvement plan.</div>
+      <div class="incomplete-note" id="incompleteNote">Answer all questions to unlock your full readiness report and improvement plan.</div>
     </div>
   </div>
 
@@ -650,6 +679,12 @@ const DATA = [
         text: "A README or architecture doc explains the codebase structure and where features live.",
         why: "AI needs a map. Without one, prompts produce code in the wrong directory, duplicate existing utilities, or invent parallel patterns instead of reusing them.",
         how: "Add a top-level 'Where things live' section to the README: list main modules, entry points, and feature directories. One page max. Reference it from the AI context file."
+      },
+      {
+        id: "git_workflow",
+        text: "Branches are short-lived and PRs are small enough to review in a single sitting.",
+        why: "SDD generates code fast. Long-lived branches guarantee spec/code drift — the spec changes while implementation is in flight. Large PRs bury AI-introduced regressions in noise and slow review to the point reviewers stop checking carefully.",
+        how: "Set a team norm: no branch lives longer than 3 days, no PR exceeds ~400 lines. Decompose features into vertical slices. Merge to main frequently and keep it always releasable."
       }
     ]
   },
@@ -659,12 +694,6 @@ const DATA = [
     title: "Specification Quality",
     subtitle: "Clarity, testability, and spec lifecycle",
     questions: [
-      {
-        id: "testable_specs",
-        text: "Requirements use concrete, measurable language — numbers and observable behaviors instead of vague terms like 'fast' or 'intuitive'.",
-        why: "AI cannot resolve fuzzy requirements. 'Fast' could mean 50ms or 5s — AI picks whichever is easier to code, silently. Vague specs guarantee surprises in production.",
-        how: "Audit your top 5 requirements. Replace every vague adjective with a measurable threshold: 'fast' → 'response < 200ms at p99', 'reliable' → '99.9% uptime', 'easy' → 'completes in < 3 clicks'."
-      },
       {
         id: "acceptance_criteria",
         text: "Each feature has defined acceptance criteria before development begins.",
@@ -698,16 +727,16 @@ const DATA = [
         how: "Write a team DoD: tests pass, linter passes, spec updated, reviewed by human, no TODO/FIXME left. Post it in the team README and reference it in PR templates."
       },
       {
-        id: "ai_authorship",
-        text: "The team can distinguish AI-generated code from human-authored code during review.",
-        why: "Reviewers apply different scrutiny to AI output (should check logic, not just style). Unclear authorship leads to under-reviewed AI code in production.",
-        how: "Add a PR label `ai-generated` or a comment convention `# AI-generated, reviewed by <name>`. Configure PR templates with an AI disclosure checkbox."
-      },
-      {
         id: "ownership",
         text: "An engineering lead is accountable for AI output quality.",
         why: "AI diffuses accountability. Without a named owner, AI-generated bugs become nobody's responsibility. Ownership is the governance layer for SDD.",
         how: "Assign one engineer per team as 'SDD Quality Lead.' They review all AI-generated PRs, own the AI context files, and track error rates. Rotate quarterly."
+      },
+      {
+        id: "release_rollback",
+        text: "A release and rollback procedure is documented and practiced — the team can revert a bad deploy quickly.",
+        why: "SDD ships code at machine speed. Without a practiced rollback path, a bad AI-generated feature stays in production far longer than it should, amplifying blast radius. The spec matching tests passing doesn't guarantee production safety.",
+        how: "Document: how to cut a release, how to verify it post-deploy, and how to rollback (feature flag disable, git revert, re-deploy). Practice the rollback at least once per quarter on a non-critical change."
       }
     ]
   },
@@ -745,9 +774,18 @@ const DATA = [
   }
 ];
 
+const FAILURE_MODES = [
+  { title: "Spec/code drift", desc: "Specs are written once, then implementation changes and nobody updates them. Long branches and weak review make this almost inevitable." },
+  { title: "False confidence from weak tests", desc: "CI is green but tests don't validate real behavior. AI-introduced logic errors ship silently — especially common when teams rely on a few flaky E2E tests." },
+  { title: "Ambiguity gets formalized", desc: "If product requirements are vague, the tool won't clarify them. It produces structured ambiguity — polished artifacts with no real decisions inside." },
+  { title: "Review bottleneck gets worse", desc: "Reviewers now must check code, tests, and specs. If review capacity was already poor, adoption makes throughput worse, not better." },
+  { title: "Tooling becomes ceremony", desc: "Team produces polished artifacts because process says so, but real decisions still happen in chat or in people's heads. Probably the most common failure mode." }
+];
+
 // State
 const answers = {};
 const MAX_SCORE = DATA.reduce((sum, cat) => sum + cat.questions.length * 2, 0);
+const TOTAL_Q = DATA.reduce((sum, cat) => sum + cat.questions.length, 0);
 
 function getScore() {
   let score = 0;
@@ -774,22 +812,22 @@ function getCatScore(cat) {
 }
 
 function getReadinessLevel(pct) {
-  if (pct >= 80) return { label: 'Ready', cls: 'badge-ready', color: 'var(--green)', msg: 'Your project has strong foundations for SDD. You can onboard fully — start with a well-scoped pilot feature to calibrate your team\'s workflow, then expand.' };
-  if (pct >= 60) return { label: 'Mostly Ready', cls: 'badge-mostly', color: 'var(--yellow)', msg: 'Good foundations, but gaps remain. Address the improvement items below before full rollout. Consider running a limited SDD pilot (one feature, one engineer) while fixing gaps.' };
-  if (pct >= 40) return { label: 'Partially Ready', cls: 'badge-partial', color: 'var(--orange)', msg: 'Several important areas need work before SDD can be safely adopted at scale. Prioritize the red items below. A constrained pilot on non-critical features is OK, but don\'t scale until gaps close.' };
-  return { label: 'Not Ready', cls: 'badge-notready', color: 'var(--red)', msg: 'Foundational gaps would make SDD unsafe or ineffective right now. Tackle the improvement plan below systematically. SDD onboarding should wait until you reach 60%+ across all categories.' };
+  if (pct >= 80) return { label: 'Ready', cls: 'badge-ready', color: 'var(--green)', msg: 'Strong foundations for SDD. Onboard fully — start with a well-scoped pilot feature to calibrate your team\'s workflow, then expand. The real precondition is already met: your team can turn intent into small, testable, reviewable, deployable changes.' };
+  if (pct >= 60) return { label: 'Mostly Ready', cls: 'badge-mostly', color: 'var(--yellow)', msg: 'Good foundations, but gaps remain. Fix red items below before full rollout. A limited pilot (one feature, one engineer) is safe while you close gaps — but don\'t scale until you\'re above 80%. Watch especially for spec/code drift as you pilot.' };
+  if (pct >= 40) return { label: 'Partially Ready', cls: 'badge-partial', color: 'var(--orange)', msg: 'Several important areas need work. Recommended fix order: (1) stabilize CI, (2) reduce flaky tests, (3) strengthen coverage on critical paths, (4) shrink PRs and branch lifetime, (5) define review expectations, (6) clarify ownership, (7) then adopt SDD tooling. A constrained pilot on non-critical features is OK, but don\'t scale.' };
+  return { label: 'Not Ready', cls: 'badge-notready', color: 'var(--red)', msg: 'Foundational gaps would make SDD unsafe or ineffective. Spec-driven tooling won\'t fix weak process — it will amplify it. Fix order: CI stability → test coverage → small PRs → review discipline → ownership → architecture clarity → release/rollback → then SDD. Wait until you reach 60%+ before onboarding.' };
 }
 
 function updateHeader() {
   const score = getScore();
   const answered = getAnsweredCount();
-  const pct = answered === 20 ? Math.round(score / MAX_SCORE * 100) : (answered > 0 ? Math.round(score / (answered * 2) * 100) : 0);
+  const pct = answered === TOTAL_Q ? Math.round(score / MAX_SCORE * 100) : (answered > 0 ? Math.round(score / (answered * 2) * 100) : 0);
 
   const el = document.getElementById('headerScore');
   const bar = document.getElementById('headerBar');
   const cnt = document.getElementById('answeredCount');
 
-  cnt.textContent = `${answered}/20 answered`;
+  cnt.textContent = `${answered}/${TOTAL_Q} answered`;
 
   if (answered === 0) {
     el.textContent = '—';
@@ -799,9 +837,9 @@ function updateHeader() {
   }
 
   const finalPct = Math.round(score / MAX_SCORE * 100);
-  el.textContent = answered === 20 ? `${finalPct}%` : `${score}/${answered * 2}`;
+  el.textContent = answered === TOTAL_Q ? `${finalPct}%` : `${score}/${answered * 2}`;
 
-  const barPct = answered === 20 ? finalPct : pct;
+  const barPct = answered === TOTAL_Q ? finalPct : pct;
   bar.style.width = barPct + '%';
 
   if (barPct >= 80) bar.style.background = 'var(--green)';
@@ -830,9 +868,9 @@ function updateSummary() {
   const body = document.getElementById('summaryBody');
   const incomplete = document.getElementById('incompleteNote');
 
-  if (answered < 20) {
+  if (answered < TOTAL_Q) {
     badge.className = 'readiness-badge badge-unanswered';
-    badge.textContent = `${answered}/20 answered`;
+    badge.textContent = `${answered}/${TOTAL_Q} answered`;
     if (incomplete) incomplete.style.display = 'block';
     return;
   }
@@ -904,6 +942,20 @@ function updateSummary() {
     }
   }
 
+  // Failure modes — shown when there are gaps
+  if (pct < 100) {
+    html += `<div class="failure-modes-section">
+      <div class="improvements-title">⚡ Common Failure Modes to Watch</div>
+      <div class="failure-modes-grid">`;
+    for (const fm of FAILURE_MODES) {
+      html += `<div class="failure-mode-card">
+        <div class="failure-mode-title">${fm.title}</div>
+        <div class="failure-mode-desc">${fm.desc}</div>
+      </div>`;
+    }
+    html += `</div></div>`;
+  }
+
   html += `<button class="copy-btn" id="copyBtn" onclick="copyResults()">Copy Results as Markdown</button>`;
 
   body.innerHTML = html;
@@ -911,7 +963,7 @@ function updateSummary() {
 
 function copyResults() {
   const answered = getAnsweredCount();
-  if (answered < 20) return;
+  if (answered < TOTAL_Q) return;
 
   const score = getScore();
   const pct = Math.round(score / MAX_SCORE * 100);
